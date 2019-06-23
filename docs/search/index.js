@@ -1,0 +1,1 @@
+NDSearch.OnPrefixIndexLoaded(["bin","con","get","has","ins","new"]);

@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("bin",["File"],[["binpack",,[[,,,,0,"File:init.lua:binpack"]]]]);

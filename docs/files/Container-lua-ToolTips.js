@@ -1,0 +1,1 @@
+NDContentPage.OnToolTipsLoaded({13:"<div class=\"NDToolTip TFunction LLua\"><div class=\"TTSummary\">Insert a rectangle.</div></div>",16:"<div class=\"NDToolTip TFunction LLua\"><div class=\"TTSummary\">Create a new bin packing container.</div></div>"});

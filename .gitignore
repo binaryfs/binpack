@@ -39,3 +39,8 @@ luac.out
 *.x86_64
 *.hex
 
+# Natural Docs
+nd-config/*
+!nd-config/Comments.txt
+!nd-config/Languages.txt
+!nd-config/Project.txt

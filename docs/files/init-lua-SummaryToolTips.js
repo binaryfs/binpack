@@ -1,0 +1,1 @@
+NDSummary.OnToolTipsLoaded("File:init.lua",{1:"<div class=\"NDToolTip TFile LLua\"><div class=\"TTSummary\">Simple 2D bin packing implementation for Lua.</div></div>",16:"<div class=\"NDToolTip TFunction LLua\"><div class=\"TTSummary\">Create a new bin packing container.</div></div>"});
