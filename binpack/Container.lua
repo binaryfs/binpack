@@ -1,5 +1,5 @@
 local BASE = (...):gsub("%.[^%.]+$", "")
-local cells = require(BASE .. ".internal.cells")
+local cells = require(BASE .. ".cells")
 
 ---
 -- Class: Container

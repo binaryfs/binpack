@@ -11,7 +11,7 @@ Even though lua-binpack was originally developed to be used in [LÖVE](https://l
 
 In the following example the bin packing module was used to render glyphs of the [Kreon font](https://www.fontsquirrel.com/fonts/kreon) into an image.
 
-![Glyphs example image](example-glyphs.png?raw=true)
+![Glyphs example image](demo/example-glyphs.png?raw=true)
 
 ## Usage
 

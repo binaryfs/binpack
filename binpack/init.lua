@@ -8,7 +8,7 @@
 
 local BASE = (...):gsub("%.init$", "")
 local Container = require(BASE .. ".Container")
-local cells = require(BASE .. ".internal.cells")
+local cells = require(BASE .. ".cells")
 
 local binpack = {
   _NAME = "lua-binpack",
