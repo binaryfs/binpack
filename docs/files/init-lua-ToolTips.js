@@ -1,1 +1,0 @@
-NDContentPage.OnToolTipsLoaded({3:"<div class=\"NDToolTip TClass LLua\"><div class=\"TTSummary\">Bin packing container. Use binpack.newContainer to create one.</div></div>"});

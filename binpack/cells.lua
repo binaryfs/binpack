@@ -1,14 +1,18 @@
----
--- Return a new cell.
+--- Internal module to process container cells.
+-- @module binpack.cells
+-- @author Fabian Staacke
+-- @copyright 2019
+-- @license https://opensource.org/licenses/MIT
+
+--- Return a new cell.
 --
--- Parameters:
--- left   - Position along x-axis
--- top    - Position along y-axis
--- width  - Initial width
--- height - Initial height
+-- @param left   Position along x-axis
+-- @param top    Position along y-axis
+-- @param width  Initial width
+-- @param height Initial height
 --
--- Returns:
--- cell object
+-- @return cell object
+-- @local
 local function newCell(left, top, width, height)
   return {
     left = left,
@@ -27,19 +31,16 @@ local function newCell(left, top, width, height)
   }
 end
 
----
--- Find a cell large enough for the specified rectangle.
---
+--- Find a cell large enough for the specified rectangle.
 -- The search is performed recursively in the given cell and its descendants.
 --
--- Parameters:
--- cell   - The cell to check
--- width  - The rectangle's width
--- height - The rectangle's height
+-- @param cell   The cell to check
+-- @param width  The rectangle's width
+-- @param height The rectangle's height
 --
--- Returns:
--- 1. - A fitting cell or nil if the search fails
--- 2. - Error message if the search fails
+-- @return[1] A fitting cell or nil if the search fails
+-- @return[2] Error message if the search fails
+-- @local
 local function searchFittingCell(cell, width, height)
   local emptyCell, err
 
@@ -58,15 +59,14 @@ local function searchFittingCell(cell, width, height)
   return emptyCell, err
 end
 
---- 
--- Split a cell along the edges of the specified rectangle.
---
+--- Split a cell along the edges of the specified rectangle.
 -- The new cells that emerge from the split become children of the original cell.
 --
--- Parameters:
--- cell   - The cell to split
--- width  - The rectangle's width
--- height - The rectangle's height
+-- @param cell   The cell to split
+-- @param width  The rectangle's width
+-- @param height The rectangle's height
+--
+-- @local
 local function splitCell(cell, width, height)
   local remainingWidth = cell.width - width
   local remainingHeight = cell.height - height
@@ -84,16 +84,14 @@ local function splitCell(cell, width, height)
   cell.height = height
 end
 
----
--- Expand a cell tree to the right to contain the specified rectangle.
+--- Expand a cell tree to the right to contain the specified rectangle.
 --
--- Parameters:
--- root   - The root cell of the tree
--- width  - The rectangle's width
--- height - The rectangle's height
+-- @param root   The root cell of the tree
+-- @param width  The rectangle's width
+-- @param height The rectangle's height
 --
--- Returns:
--- The new root cell of the tree
+-- @return The new root cell of the tree
+-- @local
 local function expandRight(root, width, height)
   local newRoot = newCell(root.boundingWidth, 0, width, height)
   newRoot.firstChild = root
@@ -103,16 +101,14 @@ local function expandRight(root, width, height)
   return newRoot
 end
 
----
--- Expand a cell tree to the bottom to contain the specified rectangle.
+--- Expand a cell tree to the bottom to contain the specified rectangle.
 --
--- Parameters:
--- root   - The root cell of the tree
--- width  - The rectangle's width
--- height - The rectangle's height
+-- @param root   The root cell of the tree
+-- @param width  The rectangle's width
+-- @param height The rectangle's height
 --
--- Returns:
--- The new root cell of the tree
+-- @return The new root cell of the tree
+-- @local
 local function expandBottom(root, width, height)
   local newRoot = newCell(0, root.boundingHeight, width, height)
   newRoot.firstChild = newCell(width, root.boundingHeight, root.boundingWidth - width, height)
