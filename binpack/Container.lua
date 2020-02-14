@@ -1,5 +1,5 @@
---- Bin packing container. Use binpack.newContainer to create one.
---
+--- Bin packing container.
+-- Use binpack.newContainer to create one.
 -- @classmod binpack.Container
 -- @author Fabian Staacke
 -- @copyright 2019
@@ -29,7 +29,7 @@ Container.__index = Container
 -- else
 --   print(err)
 -- end
-Container.insert = function(self, width, height, data)
+function Container:insert(width, height, data)
   assert(width > 0 and height > 0, "width and height must be positive")
 
   width = width + self._padding * 2
@@ -57,13 +57,13 @@ end
 --- Get the size of the container.
 -- @return[1] Width of the container
 -- @return[2] Height of the container
-Container.getSize = function(self)
+function Container:getSize()
   return self._root.boundingWidth, self._root.boundingHeight
 end
 
 --- Check if the last insertion caused the container to grow.
 -- @treturn bool
-Container.hasGrown = function(self)
+function Container:hasGrown()
   return self._hasGrown
 end
 
@@ -73,7 +73,7 @@ end
 -- for i = 1, container:getCellCount() do
 --   print(container:getCellSize(i))
 -- end
-Container.getCellCount = function(self)
+function Container:getCellCount()
   return #self._filledCells
 end
 
@@ -85,7 +85,7 @@ end
 -- @retunr[2] Cell position along y-axis
 --
 -- @raise Invalid cell index
-Container.getCellPosition = function(self, index)
+function Container:getCellPosition(index)
   local cell = assert(self._filledCells[index], "Invalid cell index")
   return cell.left, cell.top
 end
@@ -101,7 +101,7 @@ end
 -- @return[2] The cell's height
 --
 -- @raise Invalid cell index
-Container.getCellSize = function(self, index)
+function Container:getCellSize(index)
   local cell = assert(self._filledCells[index], "Invalid cell index")
   return cell.width, cell.height
 end
@@ -117,7 +117,7 @@ end
 -- @return[2] The cell's height
 --
 -- @raise Invalid cell index
-Container.getCellContentSize = function(self, index)
+function Container:getCellContentSize(index)
   local cell = assert(self._filledCells[index], "Invalid cell index")
   return cell.width - self._padding * 2, cell.height - self._padding * 2
 end
@@ -132,7 +132,7 @@ end
 -- @return[4] Bounding box height
 --
 -- @raise: Invalid cell index
-Container.getCellBoundings = function(self, index)
+function Container:getCellBoundings(index)
   local cell = assert(self._filledCells[index], "Invalid cell index")
   local left, top = cell.left, cell.top
   -- Does the cell have top child?
@@ -153,7 +153,7 @@ end
 -- @return The stored data or nil if the cell doesn't store any data
 --
 -- @raise Invalid cell index
-Container.getCellData = function(self, index)
+function Container:getCellData(index)
   local cell = assert(self._filledCells[index], "Invalid cell index")
   return cell.data
 end
@@ -165,7 +165,7 @@ end
 --
 -- @return[1] The cell that contains the rectangle or nil if growth fails
 -- @return[2] Error message if growth fails
-Container._grow = function(self, width, height)
+function Container:_grow(width, height)
   local newRoot, err
   local oldRoot = self._root
 

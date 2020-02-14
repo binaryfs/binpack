@@ -66,10 +66,8 @@ function love.draw()
 end
 ```
 
-## Documentation
-
-The documentation was build with [Natural Docs](https://www.naturaldocs.org/) from the source code and can be found in the `docs` folder.
-
 ## License
 
-MIT License (see LICENSE file in project root)
+Source code: MIT License (see LICENSE file in project root)
+
+Kreon font by Julia Petretta (used in the LÖVE demo script): SIL Open Font License

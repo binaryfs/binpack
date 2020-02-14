@@ -4,6 +4,8 @@
 -- @copyright 2019
 -- @license https://opensource.org/licenses/MIT
 
+local cells = {}
+
 --- Return a new cell.
 --
 -- @param left   Position along x-axis
@@ -13,7 +15,7 @@
 --
 -- @return cell object
 -- @local
-local function newCell(left, top, width, height)
+function cells.newCell(left, top, width, height)
   return {
     left = left,
     top = top,
@@ -41,14 +43,14 @@ end
 -- @return[1] A fitting cell or nil if the search fails
 -- @return[2] Error message if the search fails
 -- @local
-local function searchFittingCell(cell, width, height)
+function cells.searchFittingCell(cell, width, height)
   local emptyCell, err
 
   if width <= cell.boundingWidth and height <= cell.boundingHeight then
     local isOccupied = not not cell.firstChild
     if isOccupied then
-      emptyCell, err = searchFittingCell(cell.firstChild, width, height) or
-        searchFittingCell(cell.secondChild, width, height)
+      emptyCell, err = cells.searchFittingCell(cell.firstChild, width, height) or
+        cells.searchFittingCell(cell.secondChild, width, height)
     else
       emptyCell = cell
     end
@@ -67,17 +69,25 @@ end
 -- @param height The rectangle's height
 --
 -- @local
-local function splitCell(cell, width, height)
+function cells.splitCell(cell, width, height)
   local remainingWidth = cell.width - width
   local remainingHeight = cell.height - height
 
   -- Split along the shorter edge of the remaining space.
   if remainingWidth <= remainingHeight then
-    cell.firstChild = newCell(cell.left + width, cell.top, remainingWidth, height)
-    cell.secondChild = newCell(cell.left, cell.top + height, cell.width, remainingHeight)
+    cell.firstChild = cells.newCell(
+      cell.left + width, cell.top, remainingWidth, height
+    )
+    cell.secondChild = cells.newCell(
+      cell.left, cell.top + height, cell.width, remainingHeight
+    )
   else
-    cell.firstChild = newCell(cell.left + width, cell.top, remainingWidth, cell.height)
-    cell.secondChild = newCell(cell.left, cell.top + height, width, remainingHeight)
+    cell.firstChild = cells.newCell(
+      cell.left + width, cell.top, remainingWidth, cell.height
+    )
+    cell.secondChild = cells.newCell(
+      cell.left, cell.top + height, width, remainingHeight
+    )
   end
 
   cell.width = width
@@ -92,10 +102,12 @@ end
 --
 -- @return The new root cell of the tree
 -- @local
-local function expandRight(root, width, height)
-  local newRoot = newCell(root.boundingWidth, 0, width, height)
+function cells.expandRight(root, width, height)
+  local newRoot = cells.newCell(root.boundingWidth, 0, width, height)
   newRoot.firstChild = root
-  newRoot.secondChild = newCell(root.boundingWidth, height, width, root.boundingHeight - height)
+  newRoot.secondChild = cells.newCell(
+    root.boundingWidth, height, width, root.boundingHeight - height
+  )
   newRoot.boundingWidth = root.boundingWidth + width
   newRoot.boundingHeight = root.boundingHeight
   return newRoot
@@ -109,19 +121,15 @@ end
 --
 -- @return The new root cell of the tree
 -- @local
-local function expandBottom(root, width, height)
-  local newRoot = newCell(0, root.boundingHeight, width, height)
-  newRoot.firstChild = newCell(width, root.boundingHeight, root.boundingWidth - width, height)
+function cells.expandBottom(root, width, height)
+  local newRoot = cells.newCell(0, root.boundingHeight, width, height)
+  newRoot.firstChild = cells.newCell(
+    width, root.boundingHeight, root.boundingWidth - width, height
+  )
   newRoot.secondChild = root
   newRoot.boundingWidth = root.boundingWidth
   newRoot.boundingHeight = root.boundingHeight + height
   return newRoot
 end
 
-return {
-  newCell = newCell,
-  searchFittingCell = searchFittingCell,
-  splitCell = splitCell,
-  expandRight = expandRight,
-  expandBottom = expandBottom
-}
+return cells
