@@ -42,6 +42,34 @@ for i = 1, #rectangles do
 end
 ```
 
+Use a queue to insert the rectangles in a certain order, e.g. sorted by size (the default). This achieves better results than inserting them in random order:
+
+```lua
+local queue = binpack.newQueue()
+local rectangles = {}
+
+-- Generate some random sized rectangles.
+-- The queue will sort them automatically.
+for i = 1, 10 do
+  rectangles[#rectangles + 1] = {
+    math.random(30, 100),
+    math.random(30, 100)
+  }
+end
+
+for i = 1, #rectangles do
+  queue:enqueue(unpack(rectangles[i]))
+end
+
+queue:insertInto(container, function(container, index, err)
+  if index then
+    print("Rectangle inserted at:", container:getCellPosition(index))
+  else
+    print("Insertion failed: " .. err)
+  end
+end)
+```
+
 Draw the rectangles from a container with LÖVE (or any other framework):
 
 ```Lua
