@@ -9,6 +9,14 @@ local function rgba(r, g, b, a)
   return {r / 255, g / 255, b / 255, a or 1}
 end
 
+local function shuffle(t)
+  for i = #t, 2, -1 do
+    local j = math.random(i)
+    t[i], t[j] = t[j], t[i]
+  end
+  return t
+end
+
 local white = {1, 1, 1, 1}
 local colors = {
   rgba(0, 116, 217),
@@ -22,24 +30,34 @@ local colors = {
 }
 
 function love.load()
+  -- We use a queue here to insert the font glyphs into the container sorted
+  -- by their size. This achieves far better results than inserting them in
+  -- random order but is purely optional. You can also just insert the glyphs
+  -- into the container directly.
+  local queue = binpack.newQueue()
   local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!?0123456789"
-  local fontlist = {
+  -- Shuffle the fonts to demonstrate that the queue does its job.
+  local fontlist = shuffle{
     love.graphics.newFont("demo/Kreon-Regular.ttf", 60),
     love.graphics.newFont("demo/Kreon-Regular.ttf", 48),
     love.graphics.newFont("demo/Kreon-Regular.ttf", 24),
     love.graphics.newFont("demo/Kreon-Regular.ttf", 20),
     love.graphics.newFont("demo/Kreon-Regular.ttf", 14)
   }
-  container = binpack.newContainer(512, 256)
   
   for i = 1, #fontlist do
     for j = 1, #chars do
       local c = chars:sub(j, j)
-      container:insert(
-        fontlist[i]:getWidth(c), fontlist[i]:getHeight(), {font = fontlist[i], char = c}
+      queue:enqueue(
+        fontlist[i]:getWidth(c),
+        fontlist[i]:getHeight(),
+        {font = fontlist[i], char = c}
       )
     end
   end
+
+  container = binpack.newContainer(512, 256)
+  queue:insertInto(container)
 end
  
 function love.draw()
