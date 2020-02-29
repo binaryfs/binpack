@@ -11,12 +11,13 @@
 
 local BASE = (...):gsub("%.init$", "")
 local Container = require(BASE .. ".Container")
+local Queue = require(BASE .. ".Queue")
 local cells = require(BASE .. ".cells")
 
 local binpack = {
   _NAME = "lua-binpack",
   _DESCRIPTION = "Simple 2D bin packing implementation for Lua",
-  _VERSION = "1.0.1",
+  _VERSION = "1.1.0",
   _URL = "https://github.com/binaryfs/lua-binpack",
   _LICENSE = "MIT License",
   _COPYRIGHT = "Copyright (c) 2019 Fabian Staacke"
@@ -50,6 +51,25 @@ function binpack.newContainer(width, height, padding, mode)
     _root = cells.newCell(0, 0, width, height),
     _filledCells = {}
   }, Container)
+end
+
+--- Create a new bin packing queue.
+--
+-- @param[opt] orderFunc An optional order function to sort the enqueued rectangles.
+--   The function takes two rectangles as arguments and must return true if the first
+--   rectangle should come first in the sorted queue. If no function is specified, the
+--   default order function of the Queue class is used.
+--
+-- @treturn binpack.Queue
+--
+-- @usage
+-- local queue = binpack.newQueue(function(rect1, rect2)
+--   return rect1.width > rect2.width
+-- end)
+function binpack.newQueue(orderFunc)
+  return setmetatable({
+    _orderFunction = orderFunc or Queue.defaultOrderFunction
+  }, Queue)
 end
 
 return binpack
