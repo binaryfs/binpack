@@ -32,9 +32,9 @@ local rectangles = {
 for i = 1, #rectangles do
   local index, err = container:insert(unpack(rectangles[i]))
   if index then
-    print("Rectangle inserted at:", container:getCellPosition(index))
+    print("Rectangle inserted at:", container:getCell(index):getPosition())
     if container:hasGrown() then
-      print("Container needed to grow to contain the rectangle")
+      print("Container had to grow to contain the rectangle")
     end
   else
     print("Insertion failed: " .. err)
@@ -58,12 +58,12 @@ for i = 1, 10 do
 end
 
 for i = 1, #rectangles do
-  queue:enqueue(unpack(rectangles[i]))
+  queue:add(unpack(rectangles[i]))
 end
 
 queue:insertInto(container, function(container, index, err)
   if index then
-    print("Rectangle inserted at:", container:getCellPosition(index))
+    print("Rectangle inserted at:", container:getCell(index):getPosition())
   else
     print("Insertion failed: " .. err)
   end
@@ -82,9 +82,9 @@ local colors = {
 function love.draw()
   local color = 0
   
-  for index = 1, container:getCellCount() do
-    local x, y = container:getCellPosition(index)
-    local w, h = container:getCellSize(index)
+  for _, cell in container:cells() do
+    local x, y = cell:getPosition()
+    local w, h = cell:getSize()
     
     love.graphics.setColor(colors[color + 1])
     love.graphics.rectangle("fill", x, y, w, h)
