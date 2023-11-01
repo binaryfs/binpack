@@ -1,34 +1,39 @@
---- Bin packing container.
--- Use binpack.newContainer to create one.
--- @classmod binpack.Container
--- @author Fabian Staacke
--- @copyright 2019
--- @license https://opensource.org/licenses/MIT
-
 local BASE = (...):gsub("%.[^%.]+$", "")
-local cells = require(BASE .. ".cells")
+--- @type binpack.Cell
+local Cell = require(BASE .. ".Cell")
 
+--- Bin packing container.
+--- @class binpack.Container
+--- @field protected _padding integer
+--- @field protected _canGrow boolean
+--- @field protected _hasGrown boolean
+--- @field protected _root binpack.Cell
+--- @field protected _filledCells binpack.Cell[]
 local Container = {}
 Container.__index = Container
 
+--- @param width integer The width of the container
+--- @param height integer The height of the container
+--- @param padding integer? The amount of padding inside each container cell (defaults to 0)
+--- @param canGrow boolean? Determines if the container size is dynamic (defaults to true)
+--- @return binpack.Container
+--- @nodiscard
+function Container.new(width, height, padding, canGrow)
+  return setmetatable({
+    _padding = padding or 0,
+    _canGrow = canGrow ~= false,
+    _hasGrown = false,
+    _root = Cell.new(0, 0, width, height, padding or 0),
+    _filledCells = {},
+  }, Container)
+end
+
 --- Insert a rectangle.
---
--- @param width     The rectangle's width
--- @param height    The rectangle's height
--- @param[opt] data Data to store along with the rectangle (defaults to nil)
---
--- @return[1] Cell index if insertion succeeds, nil otherwise
--- @return[2] Error message if insertions fails
---
--- @raise width and height must be positive
---
--- @usage
--- local index, err = container:insert(200, 100)
--- if index then
---   print("Rectangle inserted!")
--- else
---   print(err)
--- end
+--- @param width integer Rectangle width
+--- @param height integer Rectangle height
+--- @param data any Optional data to store along with the rectangle (defaults to nil)
+--- @return integer? index Cell index if insertion succeeds, nil otherwise
+--- @return string? error Error message if insertions fails
 function Container:insert(width, height, data)
   assert(width > 0 and height > 0, "width and height must be positive")
 
@@ -36,16 +41,16 @@ function Container:insert(width, height, data)
   height = height + self._padding * 2
   self._hasGrown = false
 
-  local cell, err = cells.searchFittingCell(self._root, width, height)
+  local cell, err = self._root:searchFittingCell(width, height)
 
   if cell then
-    cells.splitCell(cell, width, height)
+    cell:splitCell(width, height)
   elseif self._canGrow then
     cell, err = self:_grow(width, height)
   end
 
   if cell then
-    cell.data = data
+    cell:setData(data)
     table.insert(self._filledCells, cell)
     return #self._filledCells
   end
@@ -55,126 +60,62 @@ function Container:insert(width, height, data)
 end
 
 --- Get the size of the container.
--- @return[1] Width of the container
--- @return[2] Height of the container
+--- @return integer width
+--- @return integer height
+--- @nodiscard
 function Container:getSize()
-  return self._root.boundingWidth, self._root.boundingHeight
+  return self._root:getBoundingSize()
 end
 
 --- Check if the last insertion caused the container to grow.
--- @treturn bool
+--- @return boolean
+--- @nodiscard
 function Container:hasGrown()
   return self._hasGrown
 end
 
+--- Get the cell at the specified index.
+---
+--- Raises an error if the cell index is invalid.
+--- @param index integer
+--- @return binpack.Cell cell
+--- @nodiscard
+function Container:getCell(index)
+  return assert(self._filledCells[index], string.format("Invalid cell index %s", index))
+end
+
 --- Return the number of filled cells.
---
--- @usage
--- for i = 1, container:getCellCount() do
---   print(container:getCellSize(i))
--- end
+--- @return integer cellCount
+--- @nodiscard
 function Container:getCellCount()
   return #self._filledCells
 end
 
---- Get the position of the specified cell.
---
--- @param index The cell's index, starting with 1
---
--- @return[1] Cell position along x-axis
--- @retunr[2] Cell position along y-axis
---
--- @raise Invalid cell index
-function Container:getCellPosition(index)
-  local cell = assert(self._filledCells[index], "Invalid cell index")
-  return cell.left, cell.top
-end
-
---- Get the size of the specified cell including padding.
---
--- A cell has the same size as the rectangle that was inserted into it,
--- plus padding.
---
--- @param index The cell's index, starting with 1
---
--- @return[1] The cell's width
--- @return[2] The cell's height
---
--- @raise Invalid cell index
-function Container:getCellSize(index)
-  local cell = assert(self._filledCells[index], "Invalid cell index")
-  return cell.width, cell.height
-end
-
---- Get the size of the specified cell without padding.
---
--- A cell has the same size as the rectangle that was inserted into it,
--- plus padding.
---
--- @param index The cell's index, starting with 1
---
--- @return[1] The cell's width
--- @return[2] The cell's height
---
--- @raise Invalid cell index
-function Container:getCellContentSize(index)
-  local cell = assert(self._filledCells[index], "Invalid cell index")
-  return cell.width - self._padding * 2, cell.height - self._padding * 2
-end
-
---- Return a bounding box that encloses the specified cell and its descendants.
---
--- @param index The cell's index, starting with 1
--- 
--- @return[1] Bounding box position along x-axis
--- @return[2] Bounding box position along y-axis
--- @return[3] Bounding box width
--- @return[4] Bounding box height
---
--- @raise: Invalid cell index
-function Container:getCellBoundings(index)
-  local cell = assert(self._filledCells[index], "Invalid cell index")
-  local left, top = cell.left, cell.top
-  -- Does the cell have top child?
-  if cell.firstChild.left < left then
-    left = left- cell.firstChild.boundingWidth
-  end
-  -- Does the cell have a left child?
-  if cell.secondChild.top < top then
-    top = top - cell.secondChild.boundingHeight
-  end
-  return left, top, cell.boundingWidth, cell.boundingHeight
-end
-
---- Get the data that is stored in the specified cell.
--- Use the insert method to store data in cells.
---
--- @param index The cell's index, starting with 1
--- @return The stored data or nil if the cell doesn't store any data
---
--- @raise Invalid cell index
-function Container:getCellData(index)
-  local cell = assert(self._filledCells[index], "Invalid cell index")
-  return cell.data
+--- Get an iterator over all filled container cells.
+--- @return fun(t: binpack.Cell[], i: integer): integer, binpack.Cell
+--- @return table
+--- @return integer
+function Container:cells()
+  return ipairs(self._filledCells)
 end
 
 --- Grow the container so it can contain the specified rectangle.
---
--- @param width  The rectangle's width
--- @param height The rectangle's height
---
--- @return[1] The cell that contains the rectangle or nil if growth fails
--- @return[2] Error message if growth fails
+--- @param width integer  Rectangle width
+--- @param height integer Rectangle height
+--- @return binpack.Cell? cell The cell that contains the rectangle or nil if growth fails
+--- @return string? error Error message if growth fails
+--- @nodiscard
 function Container:_grow(width, height)
   local newRoot, err
   local oldRoot = self._root
+  local boundingWidth, boundingHeight = oldRoot:getBoundingSize()
 
-  if width <= oldRoot.boundingWidth or height <= oldRoot.boundingHeight then
+  if width <= boundingWidth or height <= boundingHeight then
     -- Expend container to the bottem if it has a horizontal format.
-    if oldRoot.boundingWidth > oldRoot.boundingHeight and width <= oldRoot.boundingWidth then
-      newRoot = cells.expandBottom(oldRoot, width, height)
+    if boundingWidth > boundingHeight and width <= boundingWidth then
+      newRoot = oldRoot:expandBottom(width, height)
     else
-      newRoot = cells.expandRight(oldRoot, width, height)
+      newRoot = oldRoot:expandRight(width, height)
     end
     self._root = newRoot
     self._hasGrown = true

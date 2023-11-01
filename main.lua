@@ -2,8 +2,8 @@
 
 local binpack = require "binpack"
 
+--- @type binpack.Container
 local container
-local glyphs = {}
 
 local function rgba(r, g, b, a)
   return {r / 255, g / 255, b / 255, a or 1}
@@ -44,11 +44,11 @@ function love.load()
     love.graphics.newFont("demo/Kreon-Regular.ttf", 20),
     love.graphics.newFont("demo/Kreon-Regular.ttf", 14)
   }
-  
+
   for i = 1, #fontlist do
     for j = 1, #chars do
       local c = chars:sub(j, j)
-      queue:enqueue(
+      queue:add(
         fontlist[i]:getWidth(c),
         fontlist[i]:getHeight(),
         {font = fontlist[i], char = c}
@@ -59,22 +59,21 @@ function love.load()
   container = binpack.newContainer(512, 256)
   queue:insertInto(container)
 end
- 
+
 function love.draw()
   local color = 0
-  
-  for index = 1, container:getCellCount() do
-    local x, y = container:getCellPosition(index)
-    local w, h = container:getCellSize(index)
-    local bx, by, bw, bh = container:getCellBoundings(index)
-    local data = container:getCellData(index)
-    
+
+  for _, cell in container:cells() do
+    local x, y = cell:getContentPosition()
+    local w, h = cell:getContentSize()
+    local data = cell:getData()
+
     love.graphics.setColor(colors[color + 1])
     love.graphics.rectangle("fill", x, y, w, h)
     love.graphics.setColor(white)
     love.graphics.setFont(data.font)
     love.graphics.print(data.char, x, y)
-    
+
     color = (color + 1) % #colors
   end
 end

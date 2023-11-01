@@ -1,64 +1,72 @@
---- Bin packing queue.
--- Queues are used to insert rectangles into containers in a certain order, e.g. sorted by size.
--- Use binpack.newQueue to create one.
---
--- @classmod binpack.Queue
--- @author Fabian Staacke
--- @copyright 2020
--- @license https://opensource.org/licenses/MIT
+--- @alias binpack.QueueOrderFunc fun(a: table, b: table):boolean
+--- @alias binpack.QueueCallback fun(container: binpack.Container, index: integer?, error: string?)
 
-local Queue = {}
-Queue.__index = Queue
-
---- Default order function that is used to sort the enqueued rectangles by size.
-Queue.defaultOrderFunction = function(rect1, rect2)
+--- Default order function that is used to sort the enqueued rectangles by their size.
+--- @param rect1 table
+--- @param rect2 table
+--- @return boolean
+--- @package
+local function _defaultOrderFunction(rect1, rect2)
   return rect1[1] * rect1[2] > rect2[1] * rect2[2]
 end
 
+--- Queues are used to insert rectangles into containers in a certain order, e.g. sorted by size.
+--- @class binpack.Queue
+--- @field protected _orderFunction binpack.QueueOrderFunc
+local Queue = {}
+Queue.__index = Queue
+
+--- @param orderFunction binpack.QueueOrderFunc? Order function to sort the enqueued rectangles
+--- @return binpack.Queue queue
+--- @nodiscard
+function Queue.new(orderFunction)
+  return setmetatable({
+    _orderFunction = orderFunction or _defaultOrderFunction
+  }, Queue)
+end
+
 --- Add a rectangle to the queue.
---
--- @param width     The rectangle's width
--- @param height    The rectangle's height
--- @param[opt] data Data to store along with the rectangle (defaults to nil)
---
--- @raise width and height must be positive
-function Queue:enqueue(width, height, data)
+--- @param width integer Rectangle width
+--- @param height integer Rectangle height
+--- @param data any Optional data to store along with the rectangle (defaults to nil)
+function Queue:add(width, height, data)
   assert(width > 0 and height > 0, "width and height must be positive")
   self[#self + 1] = {width, height, data}
 end
 
 --- Remove all rectangles from the queue.
 function Queue:clear()
-  for i = 1, #self do
-    self[i] = nil
+  for index = #self, 1, -1 do
+    self[index] = nil
   end
 end
 
---- Insert all enqueued rectangles into the given container.
--- This removes all rectangles from the queue.
---
--- @param container The container
--- @param[opt] callback An optional function that is called for each inserted rectangle.
---   The function expects the container and the return values from Container.insert()
---   as arguments.
---
--- @usage
--- queue:insertInto(container, function(container, index, err)
---   if index then print("Rectangle inserted")
---   else print("Error: " .. err) end
--- end)
+--- Insert all enqueued rectangles into the given container and clear the queue.
+---
+--- The optional `callback` function expects the container and the return values from
+--- `Container.insert` as arguments.
+---
+--- Example:
+--- ```
+--- queue:insertInto(container, function(container, index, err)
+---   if index then print("Rectangle inserted")
+---   else print("Error: " .. err) end
+--- end)
+--- ```
+--- @param container binpack.Container
+--- @param callback binpack.QueueCallback? Function to call for each inserted rectangle
 function Queue:insertInto(container, callback)
   table.sort(self, self._orderFunction)
 
-  for i = 1, #self do
-    local index, err = container:insert(unpack(self[i]))
+  for index = 1, #self do
+    local cellIndex, err = container:insert(unpack(self[index]))
 
     if callback then
-      callback(container, index, err)
+      callback(container, cellIndex, err)
     end
-
-    self[i] = nil
   end
+
+  self:clear()
 end
 
 return Queue
