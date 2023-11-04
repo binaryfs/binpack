@@ -1,6 +1,6 @@
 -- LÖVE binpack demo script.
 
-local binpack = require "binpack"
+local binpack = require("init")
 
 --- @type binpack.Container
 local container
