@@ -1,4 +1,4 @@
-local BASE = (...):gsub("%.[^%.]+$", "")
+local BASE = (...):gsub("Container$", "")
 --- @type binpack.Cell
 local Cell = require(BASE .. ".Cell")
 

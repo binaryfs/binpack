@@ -1,11 +1,11 @@
-# lua-binpack
+# Binpack
 A simple 2D bin packing module for Lua and LuaJIT.
 
 It packs different-sized rectangles into a rectangular container of either fixed or dynamic size. This particular implementation solves the online variant of the bin packing problem where rectangles are inserted one at a time in random order.
 
 You can use this module, for example, to generate texture atlases. It is fast enough to be used in realtime applications (with LuaJIT).
 
-Even though lua-binpack was originally developed to be used in [LÖVE](https://love2d.org/)-based projects, it doesn't depend on LÖVE.
+Even though Binpack was originally developed to be used in [LÖVE](https://love2d.org/)-based projects, it doesn't depend on LÖVE.
 
 ## Example
 
@@ -18,7 +18,7 @@ In the following example the bin packing module was used to render glyphs of the
 Include the module, create a container and insert some rectangles:
 
 ```lua
-local binpack = require "binpack"
+local binpack = require("libs.binpack")
 
 local container = binpack.newContainer(512, 512)
 
